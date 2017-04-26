@@ -20,11 +20,9 @@
 #
 
 def create_rvm_shell_chef_wrapper
-  require 'chef/mixin/command'
+  require 'open3'
 
   klass = Class.new(::RVM::Shell::AbstractWrapper) do
-    include Chef::Mixin::Command
-
     attr_accessor :current
 
     def initialize(user = nil, sh = 'bash -l', &setup_block)
@@ -66,18 +64,23 @@ def create_rvm_shell_chef_wrapper
       if no_current
         Chef::Log.debug("RVM::Shell::ChefWrapper subprocess executing with " +
           "environment of: [#{shell_params.inspect}].")
-        @current = popen4(self.shell_executable, shell_params)
+        @current = Open3.popen3(self.shell_executable, shell_params)
         invoke_setup!
       end
       yield
     ensure
-      @current = nil if no_current
+      if no_current
+        stdin.close
+        stdout.close
+        stderr.close
+        @current = nil
+      end
     end
 
     # Direct access to each of the named descriptors
-    def stdin;  @current[1]; end
-    def stdout; @current[2]; end
-    def stderr; @current[3]; end
+    def stdin;  @current[0]; end
+    def stdout; @current[1]; end
+    def stderr; @current[2]; end
 
     def shell_params
       if @user.nil?
