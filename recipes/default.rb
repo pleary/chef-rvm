@@ -21,6 +21,7 @@
 chef_gem 'rvm' do
   action :install
   version '>= 1.11.3.6'
+  compile_time true
 end
 require 'rvm'
 
