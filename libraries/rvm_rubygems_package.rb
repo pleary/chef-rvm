@@ -89,6 +89,10 @@ class Chef
           end
         end
 
+        def is_omnibus?
+          false
+        end
+
         def initialize(new_resource, run_context=nil)
           original_gem_binary = new_resource.gem_binary
           super
