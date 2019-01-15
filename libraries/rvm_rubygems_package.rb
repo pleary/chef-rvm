@@ -150,7 +150,11 @@ class Chef
           end
 
           cmd = %{rvm #{ruby_strings.join(',')} #{rvm_do(gem_env.user)} #{gem_binary_path}}
-          cmd << %{ install #{name} -q --no-document -v "#{version}" --force}
+          if node['rvm']['default_ruby'].match( /ruby-2\.[6-9]/ )
+            cmd << %{ install #{name} -q --no-document -v "#{version}" --force}
+          else
+            cmd << %{ install #{name} -q --no-rdoc --no-ri -v "#{version}"}
+          end
           cmd << %{#{src}#{opts}}
 
           if gem_env.user
